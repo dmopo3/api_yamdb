@@ -17,7 +17,7 @@ from rest_framework.mixins import (
     ListModelMixin,
 )
 
-from reviews.models import Review, Titles, User, Categories, Genres
+from reviews.models import Review, Title, User, Categories, Genres
 from api_yamdb.settings import EMAIL_FROM
 from .permissions import (
     AdminOnly,
@@ -33,10 +33,10 @@ from .serializers import (
     SendTokenSerializer,
     CategoriesSerializer,
     GenresSerializer,
-    TitlesCreateSerializer,
-    TitlesReadSerializer,
+    TitleCreateSerializer,
+    TitleReadSerializer,
 )
-from .filters import TitlesFilter
+from .filters import TitleFilter
 
 
 class CreateListDestroyViewSet(
@@ -147,12 +147,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
-        title = get_object_or_404(Titles, pk=self.kwargs.get('title_id'))
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         return title.reviews.all()
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Titles, id=title_id)
+        title = get_object_or_404(Title, id=title_id)
         if title and serializer.is_valid:
             review = Review.objects.filter(
                 title=title, author=self.request.user
@@ -215,20 +215,20 @@ class GenresViewSet(CreateListDestroyViewSet):
     lookup_field = 'slug'
 
 
-class TitlesViewSet(viewsets.ModelViewSet):
+class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для произведений"""
 
     queryset = (
-        Titles.objects.all()
+        Title.objects.all()
         .annotate(rating=Avg('reviews__score'))
         .order_by('name')
     )
     filter_backends = [DjangoFilterBackend]
-    filterset_class = TitlesFilter
+    filterset_class = TitleFilter
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):
         if self.request.method == "GET":
-            return TitlesReadSerializer
-        return TitlesCreateSerializer
+            return TitleReadSerializer
+        return TitleCreateSerializer

@@ -6,7 +6,7 @@ from .views import (
     CategoriesViewSet,
     UserViewSet,
     GenresViewSet,
-    TitlesViewSet,
+    TitleViewSet,
     Registration,
     ReviewViewSet,
     SendToren
@@ -26,7 +26,7 @@ router.register(
 )
 router.register('categories', CategoriesViewSet, basename='categories')
 router.register('genres', GenresViewSet, basename='genres')
-router.register('titles', TitlesViewSet, basename='titles')
+router.register('titles', TitleViewSet, basename='titles')
 
 urlpatterns = [
     path('v1/', include(router.urls)),

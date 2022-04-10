@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
-from reviews.models import Comments, Review, Titles, User, Categories, Genres
+from reviews.models import Comments, Review, Title, User, Categories, Genres
 
 
 class SendEmailSerializer(serializers.ModelSerializer):
@@ -75,7 +75,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             return attr
         author = request.user
         title_id = self.context['view'].kwargs.get('title_id')
-        title = get_object_or_404(Titles, pk=title_id)
+        title = get_object_or_404(Title, pk=title_id)
         if Review.objects.filter(title=title, author=author).exists():
             raise serializers.ValidationError(
                 'Вы уже оставили отзыв на данное произведение'
@@ -115,7 +115,7 @@ class GenresSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
-class TitlesReadSerializer(serializers.ModelSerializer):
+class TitleReadSerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField()
 
     genre = GenresSerializer(many=True, read_only=True)
@@ -123,10 +123,10 @@ class TitlesReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = '__all__'
-        model = Titles
+        model = Title
 
 
-class TitlesCreateSerializer(serializers.ModelSerializer):
+class TitleCreateSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         queryset=Genres.objects.all(), slug_field='slug', many=True
     )
@@ -136,4 +136,4 @@ class TitlesCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = '__all__'
-        model = Titles
+        model = Title

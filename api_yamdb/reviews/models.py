@@ -53,7 +53,7 @@ class Genres(models.Model):
         return self.name
 
 
-class Titles(models.Model):
+class Title(models.Model):
     """Произведения."""
 
     name = models.CharField(
@@ -89,7 +89,7 @@ class Review(models.Model):
     """Отзывы на произведения."""
 
     title = models.ForeignKey(
-        Titles,
+        Title,
         verbose_name='Произведение',
         on_delete=models.CASCADE,
         related_name='reviews',
