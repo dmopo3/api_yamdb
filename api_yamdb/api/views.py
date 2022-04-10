@@ -17,7 +17,7 @@ from rest_framework.mixins import (
     ListModelMixin,
 )
 
-from reviews.models import Reviews, Titles, User, Categories, Genres
+from review.models import Reviews, Titles, User, Categories, Genres
 from api_yamdb.settings import EMAIL_FROM
 from .permissions import (
     AdminOnly,

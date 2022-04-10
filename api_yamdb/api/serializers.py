@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
-from reviews.models import Comments, Reviews, Titles, User, Categories, Genres
+from review.models import Comments, Reviews, Titles, User, Categories, Genres
 
 
 class SendEmailSerializer(serializers.ModelSerializer):

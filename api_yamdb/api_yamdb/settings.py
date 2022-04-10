@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework_simplejwt',
     'api.apps.ApiConfig',
-    'reviews.apps.ReviewsConfig',
+    'review.apps.ReviewConfig',
 ]
 
 MIDDLEWARE = [
@@ -126,4 +126,4 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static/'),)
 
-AUTH_USER_MODEL = 'reviews.User'
+AUTH_USER_MODEL = 'review.User'

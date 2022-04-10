@@ -1,5 +1,5 @@
 import django_filters
-from reviews.models import Titles
+from review.models import Titles
 
 
 class TitlesFilter(django_filters.FilterSet):
