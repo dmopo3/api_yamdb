@@ -85,7 +85,7 @@ class Titles(models.Model):
         ordering = ['-id']
 
 
-class Reviews(models.Model):
+class Review(models.Model):
     """Отзывы на произведения."""
 
     title = models.ForeignKey(
@@ -138,7 +138,7 @@ class Comments(models.Model):
     """Коментарии к отзывам."""
 
     review = models.ForeignKey(
-        Reviews,
+        Review,
         verbose_name='Отзыв',
         on_delete=models.CASCADE,
         related_name='comments',

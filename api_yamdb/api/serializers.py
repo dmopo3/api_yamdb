@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
-from reviews.models import Comments, Reviews, Titles, User, Categories, Genres
+from reviews.models import Comments, Review, Titles, User, Categories, Genres
 
 
 class SendEmailSerializer(serializers.ModelSerializer):
@@ -56,7 +56,7 @@ class UserNotAdminSerializer(serializers.ModelSerializer):
         read_only_fields = ('role',)
 
 
-class ReviewsSerializer(serializers.ModelSerializer):
+class ReviewSerializer(serializers.ModelSerializer):
     """Класс для преобразования данных отзыва."""
 
     title = serializers.SlugRelatedField(
@@ -76,14 +76,14 @@ class ReviewsSerializer(serializers.ModelSerializer):
         author = request.user
         title_id = self.context['view'].kwargs.get('title_id')
         title = get_object_or_404(Titles, pk=title_id)
-        if Reviews.objects.filter(title=title, author=author).exists():
+        if Review.objects.filter(title=title, author=author).exists():
             raise serializers.ValidationError(
                 'Вы уже оставили отзыв на данное произведение'
             )
         return attr
 
     class Meta:
-        model = Reviews
+        model = Review
         fields = ('id', 'title', 'text', 'author', 'score', 'pub_date')
 
 

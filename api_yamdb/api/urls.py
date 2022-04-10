@@ -8,13 +8,13 @@ from .views import (
     GenresViewSet,
     TitlesViewSet,
     Registration,
-    ReviewsViewSet,
+    ReviewViewSet,
     SendToren
 )
 
 router = DefaultRouter()
 router.register(
-    r'titles/(?P<title_id>\d+)/reviews', ReviewsViewSet, basename='reviews'
+    r'titles/(?P<title_id>\d+)/reviews', ReviewViewSet, basename='reviews'
 )
 router.register(
     'users', UserViewSet, basename='users'

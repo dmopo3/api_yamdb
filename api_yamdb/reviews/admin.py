@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Comments, Reviews, User, Categories, Genres, Titles
+from .models import Comments, Review, User, Categories, Genres, Titles
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -10,7 +10,7 @@ class UserAdmin(admin.ModelAdmin):
 #   list_editable = [i.name for i in User._meta.fields if i !='id']
 
 
-class ReviewsAdmin(admin.ModelAdmin):
+class ReviewAdmin(admin.ModelAdmin):
     """Класс для отображения полей отзыва в админке."""
 
     list_display = (
@@ -69,7 +69,7 @@ class TitlesAdmin(admin.ModelAdmin):
 
 
 admin.site.register(User, UserAdmin)
-admin.site.register(Reviews, ReviewsAdmin)
+admin.site.register(Review, ReviewAdmin)
 admin.site.register(Comments, CommentsAdmin)
 admin.site.register(Categories, CategoriesAdmin)
 admin.site.register(Genres, GenresAdmin)

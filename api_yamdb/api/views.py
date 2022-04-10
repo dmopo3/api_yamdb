@@ -17,7 +17,7 @@ from rest_framework.mixins import (
     ListModelMixin,
 )
 
-from reviews.models import Reviews, Titles, User, Categories, Genres
+from reviews.models import Review, Titles, User, Categories, Genres
 from api_yamdb.settings import EMAIL_FROM
 from .permissions import (
     AdminOnly,
@@ -29,7 +29,7 @@ from .serializers import (
     UserSerializer,
     UserNotAdminSerializer,
     CommentsSerializer,
-    ReviewsSerializer,
+    ReviewSerializer,
     SendTokenSerializer,
     CategoriesSerializer,
     GenresSerializer,
@@ -139,10 +139,10 @@ class SendToren(APIView):
         return Response(f'token: {str(token)}', status=status.HTTP_200_OK)
 
 
-class ReviewsViewSet(viewsets.ModelViewSet):
+class ReviewViewSet(viewsets.ModelViewSet):
     """Класс для работы с оценками."""
 
-    serializer_class = ReviewsSerializer
+    serializer_class = ReviewSerializer
     permission_classes = [IsAdminModeratorOwnerOrReadOnly]
     pagination_class = LimitOffsetPagination
 
@@ -154,7 +154,7 @@ class ReviewsViewSet(viewsets.ModelViewSet):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Titles, id=title_id)
         if title and serializer.is_valid:
-            review = Reviews.objects.filter(
+            review = Review.objects.filter(
                 title=title, author=self.request.user
             )
             if len(review) == 0:
@@ -171,13 +171,13 @@ class CommentsViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
-        review = get_object_or_404(Reviews, pk=self.kwargs.get('review_id'))
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
         return review.comments.all()
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
         review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Reviews, id=review_id, title=title_id)
+        review = get_object_or_404(Review, id=review_id, title=title_id)
         if serializer.is_valid:
             serializer.save(author=self.request.user, review=review)
 
