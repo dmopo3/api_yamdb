@@ -28,7 +28,7 @@ class User(AbstractUser):
 class Categories(models.Model):
     """Категории произведений (Фильмы, книги и тд)."""
 
-    name = models.CharField('Категория', max_length=30)
+    name = models.CharField('Категория', max_length=256)
     slug = models.SlugField('Слак', max_length=50, unique=True)
 
     class Meta:
@@ -42,7 +42,7 @@ class Categories(models.Model):
 class Genres(models.Model):
     """Жанры произведений."""
 
-    name = models.CharField('Жанр', max_length=30)
+    name = models.CharField('Жанр', max_length=256)
     slug = models.SlugField('Слак', max_length=50, unique=True)
 
     class Meta:
@@ -56,8 +56,8 @@ class Genres(models.Model):
 class Title(models.Model):
     """Произведения."""
 
-    name = models.CharField(
-        'Название произведения', max_length=200, db_index=True
+    name = models.TextField(
+        'Название произведения', db_index=True
     )
     year = models.IntegerField(
         'Дата выхода произведения', validators=[validate_year], blank=True
@@ -76,13 +76,13 @@ class Title(models.Model):
         null=True,
     )
 
-    def __str__(self) -> str:
-        return self.name
-
     class Meta:
         verbose_name = 'Произведении'
         verbose_name_plural = 'Произведении'
         ordering = ['-id']
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class Review(models.Model):

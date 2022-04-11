@@ -221,7 +221,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = (
         Title.objects.all()
         .annotate(rating=Avg('reviews__score'))
-        .order_by('name')
+        .order_by('id')
     )
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilter
