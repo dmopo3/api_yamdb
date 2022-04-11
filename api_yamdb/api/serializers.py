@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
+
 from reviews.models import Comments, Review, Title, User, Categories, Genres
 
 
@@ -122,8 +123,12 @@ class TitleReadSerializer(serializers.ModelSerializer):
     category = CategoriesSerializer(many=False, read_only=True)
 
     class Meta:
-        fields = '__all__'
         model = Title
+        fields = ('id', 'name', 'year', 'rating',
+                  'description', 'genre', 'category')
+        read_only_fields = ('id', 'name', 'year', 'rating',
+                            'description', 'genre', 'category')
+
 
 
 class TitleCreateSerializer(serializers.ModelSerializer):
