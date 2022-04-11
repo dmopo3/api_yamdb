@@ -70,6 +70,10 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
+    class Meta:
+        model = Review
+        fields = ('id', 'title', 'text', 'author', 'score', 'pub_date')
+
     def validate(self, attr):
         request = self.context['request']
         if request.method != 'POST':
@@ -82,10 +86,6 @@ class ReviewSerializer(serializers.ModelSerializer):
                 'Вы уже оставили отзыв на данное произведение'
             )
         return attr
-
-    class Meta:
-        model = Review
-        fields = ('id', 'title', 'text', 'author', 'score', 'pub_date')
 
 
 class CommentsSerializer(serializers.ModelSerializer):
@@ -124,11 +124,24 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating',
-                  'description', 'genre', 'category')
-        read_only_fields = ('id', 'name', 'year', 'rating',
-                            'description', 'genre', 'category')
-
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category',
+        )
+        read_only_fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category',
+        )
 
 
 class TitleCreateSerializer(serializers.ModelSerializer):

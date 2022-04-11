@@ -56,9 +56,7 @@ class Genres(models.Model):
 class Title(models.Model):
     """Произведения."""
 
-    name = models.TextField(
-        'Название произведения', db_index=True
-    )
+    name = models.TextField('Название произведения', db_index=True)
     year = models.IntegerField(
         'Дата выхода произведения', validators=[validate_year], blank=True
     )
@@ -106,8 +104,6 @@ class Review(models.Model):
     score = models.PositiveSmallIntegerField(
         verbose_name='Оценка',
         default=1,
-        blank=False,
-        null=False,
         validators=[
             MinValueValidator(1, 'Минимальное значение 1'),
             MaxValueValidator(10, 'максимальное значение 10'),
