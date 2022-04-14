@@ -33,12 +33,11 @@ class User(AbstractUser):
         unique=True,
         validators=[RegexValidator(
             regex=r'^[\w.@+-]'
-#            regex=r'^[\w.@+-]+\z'
-# re.error: bad escape \z at position 10
-
-# как исключить, что вся строка != МЕ я не нагуглил
         )]
     )
+#    regex=r'^[\w.@+-]+\z'
+# re.error: bad escape \z at position 10
+# как исключить, что вся строка != МЕ я не нагуглил
     first_mane = models.CharField(max_length=150, blank=True, null=True)
     last_name = models.CharField(max_length=150, blank=True, null=True)
     email = models.EmailField(max_length=254, unique=True)

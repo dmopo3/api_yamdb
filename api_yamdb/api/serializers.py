@@ -16,10 +16,10 @@ class SendEmailSerializer(serializers.Serializer):
         max_length=150,
         validators=[RegexValidator(
             regex=r'^[\w.@+-]'
-#            regex=r'^[\w.@+-]+\z'
-# re.error: bad escape \z at position 10
         )]
     )
+    #            regex=r'^[\w.@+-]+\z'
+    # re.error: bad escape \z at position 10
 
     class Meta:
         model = User
@@ -39,10 +39,10 @@ class SendTokenSerializer(serializers.Serializer):
         max_length=150,
         validators=[RegexValidator(
             regex=r'^[\w.@+-]'
-#            regex=r'^[\w.@+-]+\z'
-# re.error: bad escape \z at position 10
         )]
     )
+#            regex=r'^[\w.@+-]+\z'
+# re.error: bad escape \z at position 10
     confirmation_code = serializers.CharField(required=True)
 
     class Meta:

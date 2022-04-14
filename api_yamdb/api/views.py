@@ -69,9 +69,9 @@ class UserViewSet(viewsets.ModelViewSet):
                 serializer = UserSerializer(
                     request.user, data=request.data, partial=True
                 )
-            else:
 # если пользователь не админ, то поле ROLE должно быть READ_ONLY
 # как это реализовать в одном сериализаторе я не придумал
+            else:
                 serializer = UserNotAdminSerializer(
                     request.user, data=request.data, partial=True
                 )
@@ -106,7 +106,7 @@ class Registration(APIView):
             return Response(
                 'username занят', status=status.HTTP_400_BAD_REQUEST
             )
-#Без этих двух ифов тесты валятся, как понимаю, try/except
+# Без этих двух ифов тесты валятся, как понимаю, try/except
 # не может обработать случай, когда имеил пренадлежит другому пользователю
         try:
             user = User.objects.get_or_create(
