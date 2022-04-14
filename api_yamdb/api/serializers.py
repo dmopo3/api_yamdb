@@ -1,24 +1,48 @@
+from django.forms import ValidationError
+
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
+from django.core.validators import RegexValidator
 
 from reviews.models import Comments, Review, Title, User, Categories, Genres
 
 
-class SendEmailSerializer(serializers.ModelSerializer):
+class SendEmailSerializer(serializers.Serializer):
     """Сериализатор для функции регистрации"""
 
-    email = serializers.EmailField(required=True)
-    username = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True, max_length=254)
+    username = serializers.CharField(
+        required=True,
+        max_length=150,
+        validators=[RegexValidator(
+            regex=r'^[\w.@+-]'
+#            regex=r'^[\w.@+-]+\z'
+# re.error: bad escape \z at position 10
+        )]
+    )
 
     class Meta:
         model = User
         fields = ('email', 'username')
 
+    def validate(self, attr):
+        if attr.get('username') == 'me':
+            raise ValidationError('username ME не может быть использовано')
+        return attr
 
-class SendTokenSerializer(serializers.ModelSerializer):
+
+class SendTokenSerializer(serializers.Serializer):
     """Сериализатор для функции предоставления токена."""
 
-    username = serializers.CharField(required=True)
+    username = serializers.CharField(
+        required=True,
+        max_length=150,
+        validators=[RegexValidator(
+            regex=r'^[\w.@+-]'
+#            regex=r'^[\w.@+-]+\z'
+# re.error: bad escape \z at position 10
+        )]
+    )
     confirmation_code = serializers.CharField(required=True)
 
     class Meta:

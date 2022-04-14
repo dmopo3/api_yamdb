@@ -9,7 +9,7 @@ from .views import (
     TitleViewSet,
     Registration,
     ReviewViewSet,
-    SendToren
+    SendToken
 )
 
 router = DefaultRouter()
@@ -31,5 +31,5 @@ router.register('titles', TitleViewSet, basename='titles')
 urlpatterns = [
     path('v1/', include(router.urls)),
     path('v1/auth/signup/', Registration.as_view()),
-    path('v1/auth/token/', SendToren.as_view()),
+    path('v1/auth/token/', SendToken.as_view()),
 ]

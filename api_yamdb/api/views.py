@@ -1,5 +1,4 @@
-import random
-
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
@@ -66,11 +65,13 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_current_user_info(self, request):
         serializer = UserSerializer(request.user)
         if request.method == 'PATCH':
-            if request.user.role == 'ADMIN':
+            if request.user.is_admin:
                 serializer = UserSerializer(
                     request.user, data=request.data, partial=True
                 )
             else:
+# если пользователь не админ, то поле ROLE должно быть READ_ONLY
+# как это реализовать в одном сериализаторе я не придумал
                 serializer = UserNotAdminSerializer(
                     request.user, data=request.data, partial=True
                 )
@@ -87,25 +88,36 @@ class Registration(APIView):
     def post(self, request):
         serializer = SendEmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if serializer.data['username'] == 'me':
+        if (not User.objects.filter(
+            username=serializer.validated_data['username'],
+            email=serializer.validated_data['email']
+        ).exists()
+            and User.objects.filter(
+                email=serializer.validated_data['email']
+        ).exists()):
+            return Response('Email занят', status=status.HTTP_400_BAD_REQUEST)
+        if (not User.objects.filter(
+            username=serializer.validated_data['username'],
+            email=serializer.validated_data['email']
+        ).exists()
+            and User.objects.filter(
+            username=serializer.validated_data['username']
+        ).exists()):
             return Response(
-                'username used', status=status.HTTP_400_BAD_REQUEST
+                'username занят', status=status.HTTP_400_BAD_REQUEST
             )
-        confirmation_code = random.randint(1111, 9999)
-        if User.objects.filter(username=serializer.data['username']).exists():
-            return Response(
-                'username used', status=status.HTTP_400_BAD_REQUEST
-            )
-        if User.objects.filter(email=serializer.data['email']).exists():
-            return Response('email used', status=status.HTTP_400_BAD_REQUEST)
-        User.objects.get_or_create(
-            email=serializer.data['email'],
-            username=serializer.data['username'],
-            confirmation_code=confirmation_code,
-            is_active=False,
-        )
-
-        email = serializer.data['email']
+#Без этих двух ифов тесты валятся, как понимаю, try/except
+# не может обработать случай, когда имеил пренадлежит другому пользователю
+        try:
+            user = User.objects.get_or_create(
+                email=serializer.validated_data['email'],
+                username=serializer.validated_data['username'],
+                is_active=False,
+            )[0]
+        except Exception as ex:
+            return Response(ex, stasus=status.HTTP_400_BAD_REQUEST)
+        confirmation_code = PasswordResetTokenGenerator().make_token(user)
+        email = serializer.validated_data['email']
         send_mail(
             'Welcome to yamdb',
             f'code: {confirmation_code}',
@@ -116,23 +128,27 @@ class Registration(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class SendToren(APIView):
+class SendToken(APIView):
     permission_classes = [AllowAny]
     pagination_class = LimitOffsetPagination
 
     def post(self, request):
         serializer = SendTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        username = serializer.data['username']
-        confirmation_code = serializer.data['confirmation_code']
+        username = serializer.validated_data['username']
+        confirmation_code = serializer.validated_data['confirmation_code']
         try:
-            user = User.objects.get(
+            user = get_object_or_404(
+                User,
                 username=username,
             )
         except User.DoesNotExist:
-            return Response('Error username', status=status.HTTP_404_NOT_FOUND)
-        if confirmation_code != user.confirmation_code:
-            return Response('Error code', status=status.HTTP_400_BAD_REQUEST)
+            return Response('Ошибка в username',
+                            status=status.HTTP_404_NOT_FOUND)
+        if not PasswordResetTokenGenerator().check_token(user,
+                                                         confirmation_code):
+            return Response('Неверный код подтверждения',
+                            status=status.HTTP_400_BAD_REQUEST)
         token = RefreshToken.for_user(user).access_token
         user.is_active = True
         user.save()

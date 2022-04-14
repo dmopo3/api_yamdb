@@ -1,8 +1,23 @@
+from enum import Enum
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (
+    MaxValueValidator,
+    MinValueValidator,
+    RegexValidator
+)
 from django.db import models
 
 from .validators import validate_year
+
+
+class UserRole(Enum):
+    user = 'user'
+    moderator = 'moderator'
+    admin = 'admin'
+
+    @classmethod
+    def choices(cls):
+        return(tuple((i.name, i.value) for i in cls))
 
 
 class User(AbstractUser):
@@ -13,13 +28,37 @@ class User(AbstractUser):
         ('moderator', 'moderator'),
         ('admin', 'admin'),
     )
-    username = models.CharField(max_length=150, unique=True)
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        validators=[RegexValidator(
+            regex=r'^[\w.@+-]'
+#            regex=r'^[\w.@+-]+\z'
+# re.error: bad escape \z at position 10
+
+# как исключить, что вся строка != МЕ я не нагуглил
+        )]
+    )
+    first_mane = models.CharField(max_length=150, blank=True, null=True)
+    last_name = models.CharField(max_length=150, blank=True, null=True)
     email = models.EmailField(max_length=254, unique=True)
     bio = models.TextField(blank=True)
-    role = models.CharField(max_length=99, choices=roles, default='user')
+    role = models.CharField(
+        max_length=99,
+        choices=UserRole.choices(),
+        default=UserRole.user.value
+    )
     confirmation_code = models.CharField(
         max_length=254, default='XXXX', null=True
     )
+
+    @property
+    def is_admin(self):
+        return self.role == UserRole.admin.value
+
+    @property
+    def is_moderator(self):
+        return self.role == UserRole.moderator.value
 
     def __str__(self) -> str:
         return self.username

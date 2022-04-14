@@ -7,11 +7,6 @@ class IsAdminModeratorOwnerOrReadOnly(permissions.BasePermission):
     модератора и автора.
     """
 
-    allowed_user_roles = (
-        'admin',
-        'moderator',
-    )
-
     def has_permission(self, request, view):
         return (
             request.method in permissions.SAFE_METHODS
@@ -21,7 +16,8 @@ class IsAdminModeratorOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return (
             request.method in permissions.SAFE_METHODS
-            or request.user.role in self.allowed_user_roles
+            or request.user.is_admin
+            or request.user.is_moderator
             or obj.author == request.user
         )
 
@@ -34,7 +30,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.method in permissions.SAFE_METHODS or (
             request.user.is_authenticated
-            and (request.user.role == 'admin' or request.user.is_superuser)
+            and (request.user.is_admin or request.user.is_superuser)
         )
 
 
@@ -43,7 +39,4 @@ class AdminOnly(permissions.BasePermission):
     Разрешение на редактирование только для администратора.
     """
     def has_permission(self, request, view):
-        return request.user.role == 'admin' or request.user.is_staff
-
-    def has_object_permission(self, request, view, obj):
-        return request.user.role == 'admin' or request.user.is_staff
+        return request.user.is_admin or request.user.is_staff

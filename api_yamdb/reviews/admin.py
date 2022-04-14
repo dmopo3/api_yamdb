@@ -7,9 +7,6 @@ class UserAdmin(admin.ModelAdmin):
     list_display = [i.name for i in User._meta.fields if i != 'id']
 
 
-#   list_editable = [i.name for i in User._meta.fields if i !='id']
-
-
 class ReviewAdmin(admin.ModelAdmin):
     """Класс для отображения полей отзыва в админке."""
 
