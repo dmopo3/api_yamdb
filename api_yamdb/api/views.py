@@ -96,18 +96,21 @@ class Registration(APIView):
                 is_active=False,
             )[0]
         except IntegrityError as ex:
-            return Response(f'{ex}', status.HTTP_400_BAD_REQUEST)
-# выстрадал(( много гуглить вредно
-        else:
-            confirmation_code = PasswordResetTokenGenerator().make_token(user)
-            send_mail(
-                'Welcome to yamdb',
-                f'code: {confirmation_code}',
-                EMAIL_FROM,
-                [email],
-                fail_silently=True,
-            )
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            if 'UNIQUE constraint failed: reviews_user.username' in ex.args:
+                return Response(
+                    'username занят', status.HTTP_400_BAD_REQUEST
+                )
+
+            return Response('Email занят', status.HTTP_400_BAD_REQUEST)
+        confirmation_code = PasswordResetTokenGenerator().make_token(user)
+        send_mail(
+            'Welcome to yamdb',
+            f'code: {confirmation_code}',
+            EMAIL_FROM,
+            [email],
+            fail_silently=True,
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class SendToken(APIView):

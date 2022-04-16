@@ -27,11 +27,6 @@ def username_not_me(value):
 class User(AbstractUser):
     """Модель пользователя."""
 
-    roles = (
-        ('user', 'user'),
-        ('moderator', 'moderator'),
-        ('admin', 'admin'),
-    )
     username = models.CharField(
         max_length=150,
         unique=True,
