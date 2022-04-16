@@ -20,6 +20,10 @@ class UserRole(Enum):
         return(tuple((i.name, i.value) for i in cls))
 
 
+def username_not_me(value):
+    return value != 'me'
+
+
 class User(AbstractUser):
     """Модель пользователя."""
 
@@ -32,12 +36,9 @@ class User(AbstractUser):
         max_length=150,
         unique=True,
         validators=[RegexValidator(
-            regex=r'^[\w.@+-]'
-        )]
+            regex=r'^[\w.@+-+\\z]'
+        ), username_not_me]
     )
-#    regex=r'^[\w.@+-]+\z'
-# re.error: bad escape \z at position 10
-# как исключить, что вся строка != МЕ я не нагуглил
     first_mane = models.CharField(max_length=150, blank=True, null=True)
     last_name = models.CharField(max_length=150, blank=True, null=True)
     email = models.EmailField(max_length=254, unique=True)
@@ -53,7 +54,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == UserRole.admin.value
+        return self.role == UserRole.admin.value or self.is_staff
 
     @property
     def is_moderator(self):

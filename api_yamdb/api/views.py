@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.db.models import Avg
@@ -69,8 +70,6 @@ class UserViewSet(viewsets.ModelViewSet):
                 serializer = UserSerializer(
                     request.user, data=request.data, partial=True
                 )
-# если пользователь не админ, то поле ROLE должно быть READ_ONLY
-# как это реализовать в одном сериализаторе я не придумал
             else:
                 serializer = UserNotAdminSerializer(
                     request.user, data=request.data, partial=True
@@ -82,53 +81,37 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class Registration(APIView):
+    """Первый этап регистрации"""
     permission_classes = [AllowAny]
     pagination_class = LimitOffsetPagination
 
     def post(self, request):
         serializer = SendEmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if (not User.objects.filter(
-            username=serializer.validated_data['username'],
-            email=serializer.validated_data['email']
-        ).exists()
-            and User.objects.filter(
-                email=serializer.validated_data['email']
-        ).exists()):
-            return Response('Email занят', status=status.HTTP_400_BAD_REQUEST)
-        if (not User.objects.filter(
-            username=serializer.validated_data['username'],
-            email=serializer.validated_data['email']
-        ).exists()
-            and User.objects.filter(
-            username=serializer.validated_data['username']
-        ).exists()):
-            return Response(
-                'username занят', status=status.HTTP_400_BAD_REQUEST
-            )
-# Без этих двух ифов тесты валятся, как понимаю, try/except
-# не может обработать случай, когда имеил пренадлежит другому пользователю
+        email = serializer.validated_data['email']
         try:
             user = User.objects.get_or_create(
-                email=serializer.validated_data['email'],
+                email=email,
                 username=serializer.validated_data['username'],
                 is_active=False,
             )[0]
-        except Exception as ex:
-            return Response(ex, stasus=status.HTTP_400_BAD_REQUEST)
-        confirmation_code = PasswordResetTokenGenerator().make_token(user)
-        email = serializer.validated_data['email']
-        send_mail(
-            'Welcome to yamdb',
-            f'code: {confirmation_code}',
-            EMAIL_FROM,
-            [email],
-            fail_silently=True,
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        except IntegrityError as ex:
+            return Response(f'{ex}', status.HTTP_400_BAD_REQUEST)
+# выстрадал(( много гуглить вредно
+        else:
+            confirmation_code = PasswordResetTokenGenerator().make_token(user)
+            send_mail(
+                'Welcome to yamdb',
+                f'code: {confirmation_code}',
+                EMAIL_FROM,
+                [email],
+                fail_silently=True,
+            )
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class SendToken(APIView):
+    """Второй этап регистрации"""
     permission_classes = [AllowAny]
     pagination_class = LimitOffsetPagination
 
@@ -190,28 +173,27 @@ class CommentsViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=review)
 
 
-class CategoriesViewSet(CreateListDestroyViewSet):
+class BaseCaregoriesGenresViewSet(CreateListDestroyViewSet):
+    """Класс общих параметров для Жанров и Категорий"""
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    pagination_class = LimitOffsetPagination
+    search_fields = ('=name',)
+    lookup_field = 'slug'
+
+
+class CategoriesViewSet(BaseCaregoriesGenresViewSet):
     """Вьюсет для категории."""
 
     queryset = Categories.objects.all()
     serializer_class = CategoriesSerializer
-    permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter,)
-    pagination_class = LimitOffsetPagination
-    search_fields = ('=name',)
-    lookup_field = 'slug'
 
 
-class GenresViewSet(CreateListDestroyViewSet):
+class GenresViewSet(BaseCaregoriesGenresViewSet):
     """Вьюсет для жанра."""
 
     queryset = Genres.objects.all()
     serializer_class = GenresSerializer
-    permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter,)
-    pagination_class = LimitOffsetPagination
-    search_fields = ('=name',)
-    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -228,6 +210,6 @@ class TitleViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):
-        if self.request.method == "GET":
+        if self.request.method == 'GET':
             return TitleReadSerializer
         return TitleCreateSerializer
